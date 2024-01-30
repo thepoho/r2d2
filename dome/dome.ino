@@ -45,10 +45,10 @@ void updateAllPieServos(int position){
 //     Serial.println("here2");
     for(int i=0; i < sizeof(PIE_PINS); i++){
       pieServo[i].attach(PIE_PINS[i], 600, 2300);
-      delay(50);
+      delay(100);
 
       pieServo[i].write(position);
-      delay(50);
+      delay(100);
 
       pieServo[i].detach();
 //      Serial.print(PIE_PINS[i]);
