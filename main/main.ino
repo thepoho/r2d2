@@ -31,8 +31,14 @@ int soundInputs[] = {
 
 int RXLED = 17;  // The RX LED has a defined Arduino pin
 
-int currentSound = -1;
-int lastSound = -1;
+int playingSound    = -1;
+int lastSound       = -1;
+int requestedSound  = -1;
+int debouncingSound = -1;
+
+#define DEBOUNCE_COUNT_REQUIRED 3
+int soundDebounceCount = 0;
+
 
 unsigned long lastSentiencePlayed = 0;
 
@@ -56,7 +62,7 @@ void loop() {
 }
 
 void checkForSentienceSound(){
-  if(currentSound != SOUND_SENTIENCE)
+  if(playingSound!= SOUND_SENTIENCE)
     return;
   
   unsigned long currentTime = millis();
@@ -70,36 +76,62 @@ void checkSoundInput(){
   int pwm = pulseIn(SOUND_INPUT_PIN, HIGH, 30000);
   for(int i = 0; i < (sizeof(soundInputs)/ sizeof(soundInputs[0])); i++){
     if(pwm > soundInputs[i] - SOUND_GRACE && pwm < soundInputs[i] + SOUND_GRACE){
-      currentSound = i;
+      requestedSound = i;
       break;
     }
   }
   
-  if(currentSound != lastSound){
-    lastSound = currentSound;
-    soundChanged();
+  if(playingSound == requestedSound){
+    //do nothing - reset the debounce
+    soundDebounceCount = 0;
+  }else{
+    //requesting a different sound.
+    if(soundDebounceCount >= DEBOUNCE_COUNT_REQUIRED){
+      soundDebounceCount = 0;
+      changeSound(requestedSound);
+    }else{
+      
+      //working out if need to debounce
+      if(debouncingSound == requestedSound){
+        soundDebounceCount += 1;
+      }else{
+        soundDebounceCount = 0;
+        debouncingSound = requestedSound;
+      }
+
+      Serial.print("Debounce Count: ");
+      Serial.print(soundDebounceCount);
+      Serial.print(", CurrentSound: ");
+      Serial.print(playingSound);
+      Serial.print(", RequestedSound: ");
+      Serial.println(requestedSound);
+    }
   }
 }
 
-void soundChanged(){
-  Serial.print("Sound spec has changed ");
-  Serial.println(currentSound);
-  if(currentSound == SOUND_OFF){  //1 on controller
+void changeSound(int req){
+  requestedSound = playingSound = req;
+  
+  Serial.print("PlayingSound has changed: ");
+  Serial.println(playingSound);
+  
+  if(playingSound== SOUND_OFF){  //1 on controller
     playSound(0);
-  }else if(currentSound == SOUND_THEME){ //3 on controller
+  }else if(playingSound== SOUND_THEME){ //3 on controller
     playSound(9);
-  }else if(currentSound == SOUND_IMPERIAL_MARCH){ //4 on controller
+  }else if(playingSound== SOUND_IMPERIAL_MARCH){ //4 on controller
     playSound(11);
-  }else if(currentSound == SOUND_DISCO){ //5 on controller
+  }else if(playingSound== SOUND_DISCO){ //5 on controller
     playSound(54);
-  }else if(currentSound == SOUND_SHORT_CIRCUIT){ //6 on controller
+  }else if(playingSound== SOUND_SHORT_CIRCUIT){ //6 on controller
     playSound(6);
   }
 }
 
 void playSound(int num){
   Serial.print("Playing Sound: ");
-  Serial.println(num);
-  Serial3.write(char('p'));
+  Serial.println(byte(num));
+  
+  Serial3.write(char('t'));
   Serial3.write(byte(num));
 }
