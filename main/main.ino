@@ -1,6 +1,17 @@
 #include <Servo.h>
+#include <Adafruit_PWMServoDriver.h>
 
+// ===============  SERVOS =============== //
 
+//Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+#define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
+#define SERVOMAX  500 // This is the 'maximum' pulse length count (out of 4096)
+#define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
+#define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
+#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+
+// ===============  SOUND  =============== //
 #define SOUND_INPUT_PIN 57 //A3
 
 int soundInputs[] = {
@@ -23,6 +34,9 @@ int soundInputs[] = {
 #define SERVO_MID 90
 #define SERVO_MAX 140
 
+#define DOME_PANEL_SERVO_COUNT 5
+#define SERVO_COUNT 7
+
 #define SOUND_GRACE 15 //used when reading the value from the pwm. val +/- grace
 
 #define SENTIENCE_WAIT 10000 //10 seconds
@@ -39,8 +53,19 @@ int debouncingSound = -1;
 #define DEBOUNCE_COUNT_REQUIRED 3
 int soundDebounceCount = 0;
 
-
 unsigned long lastSentiencePlayed = 0;
+
+int servoZero     = map(0, 0, 180, SERVOMIN, SERVOMAX);
+int servoOneFifty = map(150, 0, 180, SERVOMIN, SERVOMAX);
+
+int servoLocation[SERVO_COUNT];
+int servoDestination[SERVO_COUNT];
+
+unsigned long currentMillis = 0;
+
+unsigned long shortCircuitEnd  = 0;
+unsigned long nextShortCircuitAction = 0;
+
 
 void setup() {
   pinMode(SOUND_INPUT_PIN, INPUT);
@@ -48,17 +73,135 @@ void setup() {
   Serial.begin(9600); //This pipes to the serial monitor
   Serial.println("Initialize Serial Monitor");
   Serial3.begin(38400);
+
+  // SERVOS
+  pwm.begin();
+  pwm.setOscillatorFrequency(27000000);
+
+  pwm.setPWMFreq(SERVO_FREQ);  // This is the maximum PWM frequency
+  
+  for(uint16_t servonum = 0; servonum<SERVO_COUNT; servonum++){
+    pwm.setPWM(servonum, 0, servoZero);
+    servoLocation[servonum] = 0;
+    servoDestination[servonum] = 0;
+  }
+
+  pwm.sleep();
+
+  Serial.print("0: ");
+  Serial.print(servoZero);
+  Serial.print(", 150: ");
+  Serial.println(servoOneFifty);
 }
+
 
 
 void loop() {
 
+  currentMillis = millis();
+
   checkSoundInput();
   checkForSentienceSound();
-  digitalWrite(RXLED, LOW);     // set the RX LED ON
+  checkServoMovement();
+
+  if(shortCircuiting()){
+    runShortCircuit();
+  }else{
+    resetDomeServos();
+  }
+
+  //need to put pwm to sleep well after the servo's stop moving, otherwise they won't complete their move.
+  //could set a next pwm sleep time and not have such a big delay in the main loop if it makes sense
   delay(100);
-  digitalWrite(RXLED, HIGH);    // set the RX LED OFF
-  delay(100);
+  pwm.sleep();
+
+//  digitalWrite(RXLED, LOW);     // set the RX LED ON
+//  delay(100);
+//  digitalWrite(RXLED, HIGH);    // set the RX LED OFF
+//  delay(100);
+}
+
+void printServos(){
+  for(uint16_t servonum = 0; servonum<SERVO_COUNT; servonum++){
+    Serial.print("S: ");
+    Serial.print(servonum);
+    Serial.print(", L: ");
+    Serial.print(servoLocation[servonum]);
+    Serial.print(", D: ");
+    Serial.println(servoDestination[servonum]);
+  }
+}
+
+void resetDomeServos(){
+  bool doneAnything = false;
+ for(uint16_t servonum = 0; servonum<DOME_PANEL_SERVO_COUNT; servonum++){
+    if(servoDestination[servonum] != servoZero){
+       Serial.print("Reset Servo: ");
+       Serial.print(servonum);
+       Serial.print(" Location: ");
+       Serial.println(servoLocation[servonum]);
+    }
+    servoDestination[servonum] = servoZero;
+  }
+}
+
+void checkServoMovement(){
+  bool pwmAsleep= true;
+  
+  for(uint16_t servonum = 0; servonum<SERVO_COUNT; servonum++){
+    if(servoLocation[servonum] != servoDestination[servonum]){
+      if(pwmAsleep){
+        pwmAsleep = false;
+        pwm.wakeup();
+//        printServos();
+      }
+         Serial.print("Move Servo: ");
+       Serial.print(servonum);
+       Serial.print(" Destination: ");
+       Serial.println(servoDestination[servonum]);
+      pwm.setPWM(servonum, 0, servoDestination[servonum]);
+      servoLocation[servonum] = servoDestination[servonum];
+    }    
+  }
+//  if(!pwmAsleep){
+////    delay(10);
+//////    printServos();
+//    pwm.sleep();
+//  }
+}
+
+bool shortCircuiting(){
+  return (shortCircuitEnd > currentMillis);
+}
+
+void startShortCircuit(){
+  if(shortCircuiting())
+    return;
+  shortCircuitEnd = currentMillis + 3500;  //about a 3 second file.
+}
+
+void runShortCircuit(){
+  if(shortCircuiting()){
+    if(currentMillis >= nextShortCircuitAction){
+      Serial.println("Randomising Servos");
+      for(uint16_t servonum = 0; servonum<DOME_PANEL_SERVO_COUNT; servonum++){
+        if(random(2)){
+          Serial.print("Setting Zero Servo: ");
+          Serial.println(servonum);
+          servoDestination[servonum] = servoZero;
+        }else{
+          Serial.print("Setting OneFifty Servo: ");
+          Serial.println(servonum);
+          servoDestination[servonum] = servoOneFifty;
+        }
+//         Serial.print("Running Servo: ");
+//         Serial.print(servonum);
+//         Serial.print(" Destination: ");
+//         Serial.println(servoDestination[servonum]);
+      }
+      nextShortCircuitAction = currentMillis + 350;
+    }
+  }
 }
 
 void checkForSentienceSound(){
@@ -125,6 +268,7 @@ void changeSound(int req){
     playSound(54);
   }else if(playingSound== SOUND_SHORT_CIRCUIT){ //6 on controller
     playSound(6);
+    startShortCircuit();
   }
 }
 
@@ -134,4 +278,58 @@ void playSound(int num){
   
   Serial3.write(char('t'));
   Serial3.write(byte(num));
+}
+
+void testServo(){
+    Serial.println("Test Servo");
+//    #define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
+//#define SERVOMAX  600 // This is the 'maximum' pulse length count (out of 4096)
+
+   int min = 150;
+   int max = 500; 
+
+
+   
+//   int twenty= map(20, 0, 180, SERVOMIN, SERVOMAX);
+//   int fifty= map(50, 0, 180, SERVOMIN, SERVOMAX);
+//   int seventy = map(70, 0, 180, SERVOMIN, SERVOMAX);
+//   int ninety= map(90, 0, 180, SERVOMIN, SERVOMAX);
+//int onetwenty = map(120, 0, 180, SERVOMIN, SERVOMAX);
+//
+//   int oneighty = map(180, 0, 180, SERVOMIN, SERVOMAX);
+   
+
+//   uint16_t servonum = 6;
+//
+//for(servonum=0; servonum<5; servonum++){
+//
+//     Serial.print("servo: ");
+//     Serial.println(servonum);
+//       pwm.wakeup();  
+//       pwm.setPWM(servonum, 0, onefifty);
+//       pwm.sleep();  
+//       delay(1000);
+////
+//
+//       pwm.wakeup();  
+//       pwm.setPWM(servonum, 0, zero);
+//       pwm.sleep();  
+//       delay(1000);
+//}
+//     pwm.wakeup();
+    
+//    Serial.println("Test Servo MIN");
+//    for (uint16_t pulselen = min; pulselen < max; pulselen++) {
+//      pwm.setPWM(servonum, 0, zero);
+////    }
+////pwm.sleep();
+//    delay(1000);
+////    pwm.wakeup();
+////    Serial.println("Test Servo MAX");
+////    for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+//      pwm.setPWM(servonum, 0, twenty);
+////    }
+//
+////pwm.sleep();
+//    delay(1000);
 }
