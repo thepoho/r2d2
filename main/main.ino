@@ -52,8 +52,9 @@ bool servoIsDomeEye(uint16_t num){
 void setup() {
 
   pinMode(SOUND_INPUT_PIN, INPUT);
-
   pinMode(RXLED, OUTPUT);  // Set RX LED as an output
+
+
   Serial.begin(9600); //This pipes to the serial monitor
   Serial.println("Initialize Serial Monitor");
   
@@ -97,7 +98,7 @@ void loop() {
 
   currentMillis = millis();
 
-  // pArtoo->Run(currentMillis);
+  pArtoo->Run(currentMillis);
 
   // checkSoundInput();
   // checkForSentienceSound();
@@ -178,18 +179,10 @@ void checkServoMovement(){
   }
 }
 
-bool shortCircuiting(){
-  return (shortCircuitEnd > currentMillis);
-}
-
-void startShortCircuit(){
-  if(shortCircuiting())
-    return;
-  shortCircuitEnd = currentMillis + 3500;  //about a 3 second file.
-}
 
 void runShortCircuit(){
-  if(shortCircuiting()){
+  // if(shortCircuiting()){
+  if(true){ //TODO - should be shortCircuiting()
     if(currentMillis >= nextShortCircuitAction){
       Serial.println("Randomising Servos");
       for(uint16_t servonum = 0; servonum<DOME_PANEL_SERVO_COUNT; servonum++){

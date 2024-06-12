@@ -6,6 +6,7 @@
 class Artoo {
   public:
     Artoo();
+    ~Artoo();
     void Run(unsigned long millis);
 
   private:
