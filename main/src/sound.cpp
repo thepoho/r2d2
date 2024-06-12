@@ -65,7 +65,8 @@ void Sound::checkForSentienceSound(unsigned long millis){
     return;
   
   if(millis > (lastSentiencePlayed + SENTIENCE_WAIT)){
-    playSound(SENTIENCE_LOWER + random(SENTIENCE_UPPER - SENTIENCE_LOWER ));
+    //TODO
+    // playSound(SENTIENCE_LOWER + random(SENTIENCE_UPPER - SENTIENCE_LOWER ));
     lastSentiencePlayed = millis;
   }
 }
@@ -87,14 +88,16 @@ void Sound::changeSound(int req){
     playSound(54);
   }else if(playingSound== SOUND_SHORT_CIRCUIT){ //6 on controller
     playSound(6);
-    startShortCircuit();
-  }
-
-  void playSound(int num){
-    Serial.print("Playing Sound: ");
-    Serial.println(byte(num));
-    
-    soundSerial.write(char('t'));
-    soundSerial.write(byte(num));
+    // startShortCircuit();
   }
 }
+
+void Sound::playSound(int num){
+  //TODO
+  // Serial.print("Playing Sound: ");
+  // Serial.println(byte(num));
+  
+  // soundSerial.write(char('t'));
+  // soundSerial.write(byte(num));
+}
+

@@ -30,6 +30,7 @@ class Sound {
     void checkSoundInput(int pwm);
     void checkForSentienceSound(unsigned long millis);
     void changeSound(int req);
+    void playSound(int num);
 
     int soundInputs[6];
 
