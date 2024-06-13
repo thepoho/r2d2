@@ -13,3 +13,8 @@ x:\Projects\R2D2\Arduino\main\lights.h
 
 We can assume Serial is the main debug serial link.
 Serial3 is for sound, but is initialised in main, and passed to sound class.
+
+#TODO
+* ShortCircuitServos
+* Radar Eye
+* 

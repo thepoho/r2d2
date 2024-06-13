@@ -64,32 +64,32 @@ void setup() {
   
 
   // SERVOS
-  pwm.begin();
-  pwm.setOscillatorFrequency(27000000);
+//   pwm.begin();
+//   pwm.setOscillatorFrequency(27000000);
 
-  pwm.setPWMFreq(SERVO_FREQ);  // This is the maximum PWM frequency
+//   pwm.setPWMFreq(SERVO_FREQ);  // This is the maximum PWM frequency
   
-  for(uint16_t servonum = 0; servonum<DOME_SERVO_COUNT; servonum++){
-    if(servoIsDomeEye(servonum)){
-//      pwm.setPWM(servonum, 0, servoSeventyFive);
-      domeServoLocation[servonum]    = 9999;
-      domeServoDestination[servonum] = servoSeventyFive;
-    }else{
-//      pwm.setPWM(servonum, 0, servoZero);
-      domeServoLocation[servonum] = 9999;
-      domeServoDestination[servonum] = servoZero;
-    }
-  }
+//   for(uint16_t servonum = 0; servonum<DOME_SERVO_COUNT; servonum++){
+//     if(servoIsDomeEye(servonum)){
+// //      pwm.setPWM(servonum, 0, servoSeventyFive);
+//       domeServoLocation[servonum]    = 9999;
+//       domeServoDestination[servonum] = servoSeventyFive;
+//     }else{
+// //      pwm.setPWM(servonum, 0, servoZero);
+//       domeServoLocation[servonum] = 9999;
+//       domeServoDestination[servonum] = servoZero;
+//     }
+//   }
 
-//  printServos();
-//  delay(100);
-  pwm.sleep();
+// //  printServos();
+// //  delay(100);
+//   pwm.sleep();
 
-  Serial.print("Setting OneFifty : ");
-  Serial.println(servoOneFifty); //441
+//   Serial.print("Setting OneFifty : ");
+//   Serial.println(servoOneFifty); //441
 
-    Serial.print("Setting Zero : ");
-  Serial.println(servoZero);  //150
+//     Serial.print("Setting Zero : ");
+//   Serial.println(servoZero);  //150
 
 
 }
@@ -111,12 +111,12 @@ void loop() {
 
 //  runServoEye();
 
-  checkServoMovement();
+  // checkServoMovement();
 
   //need to put pwm to sleep well after the servo's stop moving, otherwise they won't complete their move.
   //could set a next pwm sleep time and not have such a big delay in the main loop if it makes sense
   delay(100);
-  pwm.sleep();
+  // pwm.sleep();
 
   
 

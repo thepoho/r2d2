@@ -38,7 +38,8 @@ class Sound {
     void playSound(int num);
     void startShortCircuit();
 
-    int soundInputs[6];
+
+    // int soundInputs[6];
 
     int playingSound    = -1;
     int lastSound       = -1;
@@ -51,5 +52,7 @@ class Sound {
     unsigned long lastSentiencePlayed = 0;
 
     HardwareSerial* soundSerial;
+
+    const int soundInputs[6] = {975,1177,1380,1576,1780,1982};
 };
 #endif

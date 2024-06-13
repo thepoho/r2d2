@@ -1,4 +1,5 @@
 #include "include/sound.h"
+#include <Arduino.h>
 
 Sound::Sound(HardwareSerial* _serial){
   soundSerial = _serial;
@@ -6,20 +7,14 @@ Sound::Sound(HardwareSerial* _serial){
 }
 
 Sound::Sound(){
-  int poho = 5;
-  const int soundInputs[] = {
-    975,
-    1177,
-    1380,
-    1576,
-    1780,
-    1982
-  };
+
 }
 
 void Sound::run(unsigned long _millis){
   currentMillis = _millis;
-  int soundPwm = 5; //pulseIn(SOUND_INPUT_PIN, HIGH, 30000);
+  //TODO
+  // int soundPwm = 0; //
+  int soundPwm = pulseIn(SOUND_INPUT_PIN, HIGH, 30000);
   Sound::checkSoundInput(soundPwm);
   Sound::checkForSentienceSound();
 }
@@ -35,6 +30,8 @@ void Sound::checkSoundInput(int pwm){
   for(int i = 0; i < (sizeof(soundInputs)/ sizeof(soundInputs[0])); i++){
     if(pwm > soundInputs[i] - SOUND_GRACE && pwm < soundInputs[i] + SOUND_GRACE){
       requestedSound = i;
+      // Serial.print(", RequestedSound: ");
+      // Serial.println(requestedSound);
       break;
     }
   }
@@ -73,8 +70,8 @@ void Sound::checkForSentienceSound(){
     return;
   
   if(currentMillis > (lastSentiencePlayed + SENTIENCE_WAIT)){
-    //TODO
-    // playSound(SENTIENCE_LOWER + random(SENTIENCE_UPPER - SENTIENCE_LOWER ));
+    int num =  rand() % (SENTIENCE_UPPER - SENTIENCE_LOWER) + SENTIENCE_LOWER;
+    playSound(num);
     lastSentiencePlayed = currentMillis;
   }
 }
