@@ -3,17 +3,16 @@
 
 Sound::Sound(HardwareSerial* _serial){
   soundSerial = _serial;
-  // debugSerial = _debugSerial;
 }
 
 Sound::Sound(){
+}
 
+Sound::~Sound(){
 }
 
 void Sound::run(unsigned long _millis){
   currentMillis = _millis;
-  //TODO
-  // int soundPwm = 0; //
   int soundPwm = pulseIn(SOUND_INPUT_PIN, HIGH, 30000);
   Sound::checkSoundInput(soundPwm);
   Sound::checkForSentienceSound();
@@ -113,5 +112,4 @@ void Sound::playSound(int num){
   
   soundSerial->write(char('t'));
   soundSerial->write(uint8_t(num));
-  // soundSerial->write(byte(num));
 }

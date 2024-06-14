@@ -2,16 +2,18 @@
 #define artoo_h
 
 #include "sound.h"
+#include "servo_controller.h"
 
 class Artoo {
   public:
     Artoo();
     ~Artoo();
-    void Run(unsigned long millis);
+    void run(unsigned long millis);
 
   private:
 
     Sound* pSound;
+    ServoController* pServoController;
 
 };
 #endif

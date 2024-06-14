@@ -27,6 +27,7 @@ class Sound {
   public:
     Sound();
     Sound(HardwareSerial* _serial);
+    ~Sound();
     void run(unsigned long millis);
     bool isShortCircuiting();
     unsigned long shortCircuitEnd = 0;

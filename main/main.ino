@@ -1,18 +1,19 @@
 #include <Adafruit_PWMServoDriver.h>
 #include "src/include/artoo.h"
-#include "src/include/sound.h"
+// #include "src/include/sound.h"
+// #include "src/include/servo_controller.h"
 // #include <HardwareSerial.h>
 
 
 // ===============  SERVOS =============== //
 
 //Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
-#define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  500 // This is the 'maximum' pulse length count (out of 4096)
-#define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
-#define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
-#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+// Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+// #define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
+// #define SERVOMAX  500 // This is the 'maximum' pulse length count (out of 4096)
+// #define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
+// #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
+// #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
 // ===============  SOUND  =============== //
 
@@ -30,19 +31,19 @@ int RXLED = 17;  // The RX LED has a defined Arduino pin
 Artoo* pArtoo;
 Sound* pSound;
 
-int servoZero        = map(0,   0, 180, SERVOMIN, SERVOMAX);
-int servoSeventyFive = map(75,  0, 180, SERVOMIN, SERVOMAX);
-int servoOneFifty    = map(150, 0, 180, SERVOMIN, SERVOMAX);
+// int servoZero        = map(0,   0, 180, SERVOMIN, SERVOMAX);
+// int servoSeventyFive = map(75,  0, 180, SERVOMIN, SERVOMAX);
+// int servoOneFifty    = map(150, 0, 180, SERVOMIN, SERVOMAX);
 
-int domeServoLocation[DOME_SERVO_COUNT];
-int domeServoDestination[DOME_SERVO_COUNT];
+// int domeServoLocation[DOME_SERVO_COUNT];
+// int domeServoDestination[DOME_SERVO_COUNT];
 
-unsigned long currentMillis = 0;
+// unsigned long currentMillis = 0;
 
-unsigned long shortCircuitEnd  = 0;
-unsigned long nextShortCircuitAction = 0;
+// unsigned long shortCircuitEnd  = 0;
+// unsigned long nextShortCircuitAction = 0;
 
-unsigned long nextDomeEyeAction = 5000;
+// unsigned long nextDomeEyeAction = 5000;
 
 
 bool servoIsDomeEye(uint16_t num){
@@ -96,9 +97,11 @@ void setup() {
 
 void loop() {
 
-  currentMillis = millis();
+  // currentMillis = ;
 
-  pArtoo->Run(currentMillis);
+  pArtoo->run(millis());
+
+  delay(100);
 
   // checkSoundInput();
   // checkForSentienceSound();
@@ -115,7 +118,7 @@ void loop() {
 
   //need to put pwm to sleep well after the servo's stop moving, otherwise they won't complete their move.
   //could set a next pwm sleep time and not have such a big delay in the main loop if it makes sense
-  delay(100);
+  
   // pwm.sleep();
 
   
@@ -126,105 +129,88 @@ void loop() {
 //  delay(100);
 }
 
-void printServos(){
-  for(uint16_t servonum = 0; servonum<DOME_SERVO_COUNT; servonum++){
-    Serial.print("S: ");
-    Serial.print(servonum);
-    Serial.print(", L: ");
-    Serial.print(domeServoLocation[servonum]);
-    Serial.print(", D: ");
-    Serial.println(domeServoDestination[servonum]);
-  }
-}
-
-void resetDomeServos(){
-  bool doneAnything = false;
- for(uint16_t servonum = 0; servonum<DOME_SERVO_COUNT; servonum++){
-    int tmp = servoZero;
-    if(servoIsDomeEye(servonum)){
-      tmp = servoSeventyFive;
-    }
-    domeServoDestination[servonum] = tmp;
-  }
-}
-
-void resetDomePanelServos(){
-  bool doneAnything = false;
-  for(uint16_t servonum = 0; servonum<DOME_PANEL_SERVO_COUNT; servonum++){
-    domeServoDestination[servonum] = servoZero;  
-  }
-}
+// void printServos(){
+//   for(uint16_t servonum = 0; servonum<DOME_SERVO_COUNT; servonum++){
+//     Serial.print("S: ");
+//     Serial.print(servonum);
+//     Serial.print(", L: ");
+//     Serial.print(domeServoLocation[servonum]);
+//     Serial.print(", D: ");
+//     Serial.println(domeServoDestination[servonum]);
+//   }
+// }
 
 
 
-void checkServoMovement(){
-  bool pwmAsleep= true;
+
+// void checkServoMovement(){
+//   bool pwmAsleep= true;
   
-  for(uint16_t servonum = 0; servonum<DOME_SERVO_COUNT; servonum++){
-    if(domeServoLocation[servonum] != domeServoDestination[servonum]){
-      if(pwmAsleep){
-        pwmAsleep = false;
-        pwm.wakeup();
-      }
-        Serial.print("S: ");
-        Serial.print(servonum);
-        Serial.print(", L: ");
-        Serial.print(domeServoLocation[servonum]);
-        Serial.print(", D: ");
-        Serial.println(domeServoDestination[servonum]);
-        
-      pwm.setPWM(servonum, 0, domeServoDestination[servonum]);
-      domeServoLocation[servonum] = domeServoDestination[servonum];
-    }    
-  }
-}
-
-
-void runShortCircuit(){
-  // if(shortCircuiting()){
-  if(true){ //TODO - should be shortCircuiting()
-    if(currentMillis >= nextShortCircuitAction){
-      Serial.println("Randomising Servos");
-      for(uint16_t servonum = 0; servonum<DOME_PANEL_SERVO_COUNT; servonum++){
-        if(random(2)){
-          Serial.print("Setting Zero Servo: ");
-          Serial.println(servonum);
-          domeServoDestination[servonum] = servoZero;
-        }else{
-          Serial.print("Setting OneFifty Servo: ");
-          Serial.println(servonum);
-          domeServoDestination[servonum] = servoOneFifty;
-        }
-//         Serial.print("Running Servo: ");
+//   for(uint16_t servonum = 0; servonum<DOME_SERVO_COUNT; servonum++){
+//     if(domeServoLocation[servonum] != domeServoDestination[servonum]){
+//       if(pwmAsleep){
+//         pwmAsleep = false;
+//         pwm.wakeup();
+//       }
+//         Serial.print("S: ");
 //         Serial.print(servonum);
-//         Serial.print(" Destination: ");
+//         Serial.print(", L: ");
+//         Serial.print(domeServoLocation[servonum]);
+//         Serial.print(", D: ");
 //         Serial.println(domeServoDestination[servonum]);
-      }
-      nextShortCircuitAction = currentMillis + 350;
-    }
-  }
-}
+        
+//       pwm.setPWM(servonum, 0, domeServoDestination[servonum]);
+//       domeServoLocation[servonum] = domeServoDestination[servonum];
+//     }    
+//   }
+// }
 
-void runServoEye(){
-  if(currentMillis >= nextDomeEyeAction){
-    nextDomeEyeAction = currentMillis + 2000;
-    for(uint16_t servonum = 5; servonum<7; servonum++){
-      int tmp = random(3);
-      if(tmp == 0){
-        domeServoDestination[servonum] = servoZero;  
-      }else if(tmp == 1){
-        domeServoDestination[servonum] = servoSeventyFive;  
-      }else{
-        domeServoDestination[servonum] = servoOneFifty;  
-      }
-         Serial.print("Moving Eye Servo: ");
-         Serial.print(servonum);
-         Serial.print(" Destination: ");
-         Serial.println(domeServoDestination[servonum]);
-    }
 
-  }
-}
+// void runShortCircuit(){
+//   // if(shortCircuiting()){
+//   if(true){ //TODO - should be shortCircuiting()
+//     if(currentMillis >= nextShortCircuitAction){
+//       Serial.println("Randomising Servos");
+//       for(uint16_t servonum = 0; servonum<DOME_PANEL_SERVO_COUNT; servonum++){
+//         if(random(2)){
+//           Serial.print("Setting Zero Servo: ");
+//           Serial.println(servonum);
+//           domeServoDestination[servonum] = servoZero;
+//         }else{
+//           Serial.print("Setting OneFifty Servo: ");
+//           Serial.println(servonum);
+//           domeServoDestination[servonum] = servoOneFifty;
+//         }
+// //         Serial.print("Running Servo: ");
+// //         Serial.print(servonum);
+// //         Serial.print(" Destination: ");
+// //         Serial.println(domeServoDestination[servonum]);
+//       }
+//       nextShortCircuitAction = currentMillis + 350;
+//     }
+//   }
+// }
+
+// void runServoEye(){
+//   if(currentMillis >= nextDomeEyeAction){
+//     nextDomeEyeAction = currentMillis + 2000;
+//     for(uint16_t servonum = 5; servonum<7; servonum++){
+//       int tmp = random(3);
+//       if(tmp == 0){
+//         domeServoDestination[servonum] = servoZero;  
+//       }else if(tmp == 1){
+//         domeServoDestination[servonum] = servoSeventyFive;  
+//       }else{
+//         domeServoDestination[servonum] = servoOneFifty;  
+//       }
+//          Serial.print("Moving Eye Servo: ");
+//          Serial.print(servonum);
+//          Serial.print(" Destination: ");
+//          Serial.println(domeServoDestination[servonum]);
+//     }
+
+//   }
+// }
 
 void testServo(){
     Serial.println("Test Servo");
