@@ -29,6 +29,27 @@ void ServoController::run(unsigned long _millis){
   checkSleepPwm();
 }
 
+void ServoController::randomiseDomePanels(){
+  //Magic number 5 here.  I know servos 0-4 are dome panels.
+  for(int servonum = 0; servonum<5; servonum++){
+    if(rand() % 2){
+      // Serial.print("Setting Zero Servo: ");
+      // Serial.println(servonum);
+      setDomeServoDestination(servonum, servoZero);
+    }else{
+      // Serial.print("Setting OneFifty Servo: ");
+      // Serial.println(servonum);
+      setDomeServoDestination(servonum, servoOneFifty);
+    }
+  }
+}
+
+void ServoController::closeDomePanels(){
+  for(int servonum = 0; servonum<5; servonum++){
+    setDomeServoDestination(servonum, servoZero);
+  }
+}
+
 void ServoController::checkSleepPwm(){
   if(domePwmAsleep)
     return;

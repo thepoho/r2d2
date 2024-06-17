@@ -23,6 +23,8 @@ class ServoController {
     void printServos();
 
     void setDomeServoDestination(int servo, int destination);
+    void randomiseDomePanels();
+    void closeDomePanels();
 
 private:
     void moveDomeServos();
@@ -34,6 +36,8 @@ private:
 
     Adafruit_PWMServoDriver domePwm;
     Servo *domeServos[7];
+
+    const int domeServoIndexes[5] = {0,1,2,3,4};
 
     Adafruit_PWMServoDriver bodyPwm;
 

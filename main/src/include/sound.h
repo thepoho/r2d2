@@ -7,8 +7,6 @@
 #define SENTIENCE_LOWER 32
 #define SENTIENCE_UPPER 51
 
-#define SHORT_CIRCUIT_DURATION 3500 //about a 3.5 second file
-
 #define SOUND_OFF 0
 #define SOUND_SENTIENCE 1
 #define SOUND_THEME 2
@@ -32,7 +30,6 @@ class Sound {
     void checkForChangeSound(int soundInputValue);
     void changeSound(int req);
     void playSound(int num);
-    void startShortCircuit();
 
     int playingSound    = -1;
     int lastSound       = -1;

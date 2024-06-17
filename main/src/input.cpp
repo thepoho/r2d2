@@ -10,10 +10,13 @@ void Input::run(unsigned long millis){
   currentMillis = millis;
 
   checkSoundInput();
-  // // Serial.print("SoundPWM: ");
-  // // Serial.println(soundPwm);
+  // Serial.print("SoundPWM: ");
+  // Serial.println(soundPwm);
 }
 
+bool Input::soundIndexWasChanged(){
+  return(soundIndexWasChangedValue);
+}
 int Input::getSoundIndex(){
   return(playingSoundIndex);
 }
@@ -21,6 +24,8 @@ int Input::getSoundIndex(){
 void Input::checkSoundInput(){
 
   int soundPwm = pulseIn(SOUND_INPUT_PIN, HIGH, 30000);
+
+  soundIndexWasChangedValue = false;
  
   for(int i = 0; i < (sizeof(soundInputs)/ sizeof(soundInputs[0])); i++){
     if(soundPwm > soundInputs[i] - SOUND_GRACE && soundPwm < soundInputs[i] + SOUND_GRACE){
@@ -37,6 +42,7 @@ void Input::checkSoundInput(){
     if(soundDebounceCount >= DEBOUNCE_COUNT_REQUIRED){
       soundDebounceCount = 0;
       playingSoundIndex = requestedSoundIndex;
+      soundIndexWasChangedValue = true;
     }else{
       
       //working out if need to debounce

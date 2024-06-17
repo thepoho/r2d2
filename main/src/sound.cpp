@@ -13,13 +13,8 @@ Sound::~Sound(){
 
 void Sound::run(unsigned long _millis, int soundInputValue){
   currentMillis = _millis;
-  // Sound::checkSoundInput(soundPwmValue);
   Sound::checkForChangeSound(soundInputValue);
   Sound::checkForSentienceSound();
-}
-
-bool Sound::isShortCircuiting(){
-  return (shortCircuitEnd > currentMillis);
 }
 
 void Sound::checkForChangeSound(int soundInputValue){
@@ -56,23 +51,12 @@ void Sound::changeSound(int req){
     playSound(54);
   }else if(playingSound== SOUND_SHORT_CIRCUIT){ //6 on controller
     playSound(6);
-    //TODO - figure out how to tell the servos to do the short circuit thing
-    // startShortCircuit();
   }
 }
 
-
-
-void Sound::startShortCircuit(){
-  if(isShortCircuiting())
-    return;
-  shortCircuitEnd = currentMillis + SHORT_CIRCUIT_DURATION;  //about a 3 second file.
-}
-
 void Sound::playSound(int num){
-  //TODO
-  Serial.print("Playing Sound: ");
-  Serial.println(uint8_t(num));
+  // Serial.print("Playing Sound: ");
+  // Serial.println(uint8_t(num));
   
   soundSerial->write(char('t'));
   soundSerial->write(uint8_t(num));

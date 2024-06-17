@@ -19,6 +19,7 @@ class Input {
     void run(unsigned long millis);
 
     int getSoundIndex();
+    bool soundIndexWasChanged();
 
   private:
     void checkSoundInput();
@@ -28,6 +29,7 @@ class Input {
 
     int playingSoundIndex   = 0;
     int requestedSoundIndex = 0;
+    bool soundIndexWasChangedValue = false;
     int soundDebounceCount  = 0;
     int debouncingSound     = -1;
 
