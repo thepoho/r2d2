@@ -1,8 +1,9 @@
 #ifndef artoo_h
 #define artoo_h
 
-#include "sound.h"
+#include "input.h"
 #include "servo_controller.h"
+#include "sound.h"
 
 class Artoo {
   public:
@@ -12,8 +13,9 @@ class Artoo {
 
   private:
 
-    Sound* pSound;
-    ServoController* pServoController;
+    Input*            pInput;
+    ServoController*  pServoController;
+    Sound*            pSound;
 
 };
 #endif

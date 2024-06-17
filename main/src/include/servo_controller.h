@@ -22,17 +22,23 @@ class ServoController {
     void wakeupPwms();
     void printServos();
 
+    void setDomeServoDestination(int servo, int destination);
+
 private:
     void moveDomeServos();
     unsigned long currentMillis = 0;
     // HardwareSerial* soundSerial;
 
-    bool pwmAsleep = false;
-    unsigned long putPwmToSleepTime = 0;
+    bool domePwmAsleep = false;
+    unsigned long putDomePwmToSleepTime = 0;
 
     Adafruit_PWMServoDriver domePwm;
     Servo *domeServos[7];
 
     Adafruit_PWMServoDriver bodyPwm;
+
+    int servoZero        = map(0,   0, 180, SERVOMIN, SERVOMAX);
+    int servoSeventyFive = map(75,  0, 180, SERVOMIN, SERVOMAX);
+    int servoOneFifty    = map(150, 0, 180, SERVOMIN, SERVOMAX);
 };
 #endif

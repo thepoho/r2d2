@@ -30,28 +30,32 @@ void ServoController::run(unsigned long _millis){
 }
 
 void ServoController::checkSleepPwm(){
-  if(pwmAsleep)
+  if(domePwmAsleep)
     return;
 
-  if(currentMillis > putPwmToSleepTime){
+  if(currentMillis > putDomePwmToSleepTime){
     domePwm.sleep();
     //bodyPwm.sleep();
-    pwmAsleep = true;
+    domePwmAsleep = true;
   }
 }
 
-void ServoController::wakeupPwms(){
+void ServoController::setDomeServoDestination(int servo, int destination){
+  domeServos[servo]->destination = destination;
+}
 
+void ServoController::wakeupPwms(){
+  if(domePwmAsleep){
+    domePwmAsleep = false;
+    domePwm.wakeup();
+    putDomePwmToSleepTime = currentMillis + PWM_SLEEP_GRACE_PERIOD;
+  }
 }
 
 void ServoController::moveDomeServos(){
   for(int i=0; i < sizeof(domeServos)/sizeof(domeServos[0]); i++){
     if(domeServos[i]->needsMoving()){
-      if(pwmAsleep){
-        pwmAsleep = false;
-        domePwm.wakeup();
-        putPwmToSleepTime = currentMillis + PWM_SLEEP_GRACE_PERIOD;
-      }
+      wakeupPwms();
       domePwm.setPWM(domeServos[i]->index, 0, domeServos[i]->destination);
       domeServos[i]->location = domeServos[i]->destination;
     }
