@@ -29,16 +29,21 @@ void ServoController::run(unsigned long _millis){
   checkSleepPwm();
 }
 
+void ServoController::randomiseEye(){
+  int tmp = map((rand() % 150),   0, 180, SERVOMIN, SERVOMAX);
+  setDomeServoDestination(eyeXServoIndex, tmp);
+
+  //same for the Y servo
+  tmp = map((rand() % 150),   0, 180, SERVOMIN, SERVOMAX);
+  setDomeServoDestination(eyeYServoIndex, tmp);
+}
+
 void ServoController::randomiseDomePanels(){
   //Magic number 5 here.  I know servos 0-4 are dome panels.
   for(int servonum = 0; servonum<5; servonum++){
     if(rand() % 2){
-      // Serial.print("Setting Zero Servo: ");
-      // Serial.println(servonum);
       setDomeServoDestination(servonum, servoZero);
     }else{
-      // Serial.print("Setting OneFifty Servo: ");
-      // Serial.println(servonum);
       setDomeServoDestination(servonum, servoOneFifty);
     }
   }

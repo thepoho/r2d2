@@ -5,7 +5,7 @@
 #include <Adafruit_PWMServoDriver.h>
 #include "servo.h"
 
-#define PWM_SLEEP_GRACE_PERIOD 500
+#define PWM_SLEEP_GRACE_PERIOD 100 //was 500
 
 #define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  500 // This is the 'maximum' pulse length count (out of 4096)
@@ -23,6 +23,7 @@ class ServoController {
     void printServos();
 
     void setDomeServoDestination(int servo, int destination);
+    void randomiseEye();
     void randomiseDomePanels();
     void closeDomePanels();
 
@@ -38,6 +39,8 @@ private:
     Servo *domeServos[7];
 
     const int domeServoIndexes[5] = {0,1,2,3,4};
+    const int eyeXServoIndex = 5;
+    const int eyeYServoIndex = 6;
 
     Adafruit_PWMServoDriver bodyPwm;
 

@@ -14,10 +14,13 @@ Artoo::~Artoo(){
 }
 
 void Artoo::run(unsigned long millis){
-  // if(soundPwm > 1000){
-  //     pServoController->setDomeServoDestination(0,  map(150,   0, 180, SERVOMIN, SERVOMAX));
+  //debug stuff.
+  // if(pInput->getSoundIndex() == 0){
+  //   pServoController->setDomeServoDestination(5,  map(0,   0, 180, SERVOMIN, SERVOMAX));
+  //   pServoController->setDomeServoDestination(6,  map(0,   0, 180, SERVOMIN, SERVOMAX));
   // }else{
-  //     pServoController->setDomeServoDestination(0,  map(0,   0, 180, SERVOMIN, SERVOMAX));
+  //   // pServoController->setDomeServoDestination(5,  map(150,   0, 180, SERVOMIN, SERVOMAX));
+  //   pServoController->setDomeServoDestination(6,  map(150,   0, 180, SERVOMIN, SERVOMAX));
   // }
 
   currentMillis = millis;
@@ -30,6 +33,15 @@ void Artoo::run(unsigned long millis){
   //currently the dome panels are either short circuiting or reset.
   checkStartShortCircuit();
   runShortCircuit();
+
+  updateEyeMovement();
+}
+
+void Artoo::updateEyeMovement(){
+  if(currentMillis >= nextEyeMovement){
+    pServoController->randomiseEye();
+    nextEyeMovement = currentMillis + EYE_MOVEMENT_SERVO_INTERVAL;
+  }
 }
 
 void Artoo::runShortCircuit(){
