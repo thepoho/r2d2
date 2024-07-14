@@ -1,0 +1,59 @@
+connectors:
+  Arduino:
+    type: Arduino
+    subtype: female
+    pinlabels: [SCL ,SDA, A3, A4]
+  i2cBus:
+    type: Molex KK 254
+    subtype: female
+    pinlabels: [5v, SCL, SDA, GND]
+  servoController: &servo_controller
+    type: PCA9685 
+    subtype: male
+    pinlabels: [GND, OE, SCL, SDA, VCC, V+]
+  domeServo:
+    <<: *servo_controller
+  bodyServo:
+    <<: *servo_controller
+  JumperR8:
+    type: JumperR8
+    subtype: male
+    pinlabels: [CH1,CH2,CH3,CH4,CH5]
+
+cables:
+  i2c_wire: &i2c_wire
+    color_code: DIN
+    wirecount: 4
+    # labels: [GND, SCL, SDA, 5v]
+    colors: [RD, OG, WH, OG]
+  w_i2c_1:
+    <<: *i2c_wire
+    # labels: [GND, SCL, SDA, 5v]
+  w_i2c_2:
+    <<: *i2c_wire
+  w_i2c_3:
+    <<: *i2c_wire
+  rc_arduino:
+    color_code: DIN
+    wirecount: 2
+    colors: [VI, BR]
+
+
+
+connections:
+  -
+    - Arduino: [SCL, SDA]
+    - w_i2c_1: [2,   3]
+    - i2cBus:  [SCL, SDA]
+  -
+    - i2cBus:    [5v, SCL, SDA, GND]
+    - w_i2c_2:   [1,  2,   3,   4]
+    - domeServo: [V+, SCL, SDA, GND]
+  -
+    - i2cBus:    [5v, SCL, SDA, GND]
+    - w_i2c_3:   [1,  2,   3,   4]
+    - bodyServo: [V+, SCL, SDA, GND]
+  - 
+    - JumperR8:   [CH4, CH5]
+    - rc_arduino: [1,   2]
+    - Arduino:    [A3,  A4]

@@ -1,0 +1,7 @@
+Id	Description	Qty	Unit	Designators
+1	Cable, 2 wires	0	m	rc_arduino
+2	Cable, 4 wires	0	m	w_i2c_1, w_i2c_2, w_i2c_3
+3	Connector, Arduino, female, 4 pins	1		Arduino
+4	Connector, JumperR8, male, 5 pins	1		JumperR8
+5	Connector, Molex KK 254, female, 4 pins	1		i2cBus
+6	Connector, PCA9685, male, 6 pins	2		bodyServo, domeServo
