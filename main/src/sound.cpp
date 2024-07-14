@@ -11,6 +11,11 @@ Sound::Sound(){
 Sound::~Sound(){
 }
 
+void Sound::run(unsigned long _millis){
+  currentMillis = _millis;
+  Sound::checkForSentienceSound();
+}
+
 void Sound::run(unsigned long _millis, int soundInputValue){
   currentMillis = _millis;
   Sound::checkForChangeSound(soundInputValue);

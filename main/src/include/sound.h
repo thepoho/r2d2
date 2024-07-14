@@ -20,6 +20,7 @@ class Sound {
     Sound();
     Sound(HardwareSerial* _serial);
     ~Sound();
+    void run(unsigned long millis);
     void run(unsigned long millis, int soundInputValue);
     bool isShortCircuiting();
     unsigned long shortCircuitEnd = 0;

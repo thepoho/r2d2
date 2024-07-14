@@ -19,33 +19,46 @@ class ServoController {
     ~ServoController();
     void run(unsigned long _millis);
     void checkSleepPwm();
-    void wakeupPwms();
+    
     void printServos();
 
     void setDomeServoDestination(int servo, int destination);
+    void setBodyServoDestination(int servo, int destination);
     void randomiseEye();
     void randomiseDomePanels();
     void closeDomePanels();
 
-private:
-    void moveDomeServos();
-    unsigned long currentMillis = 0;
-    // HardwareSerial* soundSerial;
+    void randomiseBodyPanels();
+    void closeBodyPanels();
 
-    bool domePwmAsleep = false;
-    unsigned long putDomePwmToSleepTime = 0;
+    int servoZero        = map(0,   0, 180, SERVOMIN, SERVOMAX);
+    int servoSeventyFive = map(75,  0, 180, SERVOMIN, SERVOMAX);
+    int servoOneFifty    = map(150, 0, 180, SERVOMIN, SERVOMAX);
+
+private:
+    void moveServos();
+    void wakeupDomePwm();
+    void wakeupBodyPwm();
+
+    unsigned long currentMillis = 0;
 
     Adafruit_PWMServoDriver domePwm;
     Servo *domeServos[7];
+    bool domePwmAsleep = false;
+    unsigned long putDomePwmToSleepTime = 0;
 
     const int domeServoIndexes[5] = {0,1,2,3,4};
     const int eyeXServoIndex = 5;
     const int eyeYServoIndex = 6;
 
-    Adafruit_PWMServoDriver bodyPwm;
 
-    int servoZero        = map(0,   0, 180, SERVOMIN, SERVOMAX);
-    int servoSeventyFive = map(75,  0, 180, SERVOMIN, SERVOMAX);
-    int servoOneFifty    = map(150, 0, 180, SERVOMIN, SERVOMAX);
+    Adafruit_PWMServoDriver bodyPwm;
+    Servo *bodyServos[2];
+    bool bodyPwmAsleep = false;
+    unsigned long putBodyPwmToSleepTime = 0;
+
+    //handy assignments
+    Servo *topArmServo;
+    Servo *bottomArmServo;
 };
 #endif

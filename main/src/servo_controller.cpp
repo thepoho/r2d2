@@ -14,18 +14,24 @@ ServoController::ServoController(){
   domeServos[5] = new Servo(5);  // Eye Servo 1
   domeServos[6] = new Servo(6);  // Eye Servo 2
 
-  // bodyPwm = Adafruit_PWMServoDriver(0x41);
+  bodyPwm = Adafruit_PWMServoDriver(0x41);
+  bodyPwm.begin();
+  bodyPwm.setPWMFreq(SERVO_FREQ);  // This is the maximum PWM frequency
+  topArmServo    = bodyServos[0] = new Servo(0);
+  bottomArmServo = bodyServos[1] = new Servo(1);
 }
 
 ServoController::~ServoController(){
   for(int i=0; i < sizeof(domeServos)/sizeof(domeServos[0]); i++){
     delete domeServos[i];
   }
+  delete topArmServo;
+  delete bottomArmServo;
 }
 
 void ServoController::run(unsigned long _millis){
   currentMillis = _millis;
-  moveDomeServos();
+  moveServos();
   checkSleepPwm();
 }
 
@@ -55,6 +61,25 @@ void ServoController::closeDomePanels(){
   }
 }
 
+void ServoController::randomiseBodyPanels(){
+  //Magic number 5 here.  I know servos 0-4 are dome panels.
+  for(int servonum = 0; servonum<2; servonum++){
+    if(rand() % 3 == 0){
+      setBodyServoDestination(servonum, servoZero);
+    }else if(rand() % 3 == 1){
+      setBodyServoDestination(servonum, servoSeventyFive);
+    }else{
+      setBodyServoDestination(servonum, servoOneFifty);
+    }
+  }
+}
+
+void ServoController::closeBodyPanels(){
+  for(int servonum = 0; servonum<2; servonum++){
+    setBodyServoDestination(servonum, servoZero);
+  }
+}
+
 void ServoController::checkSleepPwm(){
   if(domePwmAsleep)
     return;
@@ -70,7 +95,11 @@ void ServoController::setDomeServoDestination(int servo, int destination){
   domeServos[servo]->destination = destination;
 }
 
-void ServoController::wakeupPwms(){
+void ServoController::setBodyServoDestination(int servo, int destination){
+  bodyServos[servo]->destination = destination;
+}
+
+void ServoController::wakeupDomePwm(){
   if(domePwmAsleep){
     domePwmAsleep = false;
     domePwm.wakeup();
@@ -78,15 +107,31 @@ void ServoController::wakeupPwms(){
   }
 }
 
-void ServoController::moveDomeServos(){
+void ServoController::wakeupBodyPwm(){
+  if(bodyPwmAsleep){
+    bodyPwmAsleep = false;
+    bodyPwm.wakeup();
+    putBodyPwmToSleepTime = currentMillis + PWM_SLEEP_GRACE_PERIOD;
+  }
+}
+
+void ServoController::moveServos(){
   for(int i=0; i < sizeof(domeServos)/sizeof(domeServos[0]); i++){
     if(domeServos[i]->needsMoving()){
-      wakeupPwms();
+      wakeupDomePwm();
       domePwm.setPWM(domeServos[i]->index, 0, domeServos[i]->destination);
       domeServos[i]->location = domeServos[i]->destination;
     }
   }
+  for(int i=0; i < sizeof(bodyServos)/sizeof(bodyServos[0]); i++){
+    if(bodyServos[i]->needsMoving()){
+      wakeupBodyPwm();
+      bodyPwm.setPWM(bodyServos[i]->index, 0, bodyServos[i]->destination);
+      bodyServos[i]->location = bodyServos[i]->destination;
+    }
+  }
 }
+
 
 void ServoController::printServos(){
   // for(uint16_t servonum = 0; servonum<DOME_SERVO_COUNT; servonum++){
@@ -98,67 +143,3 @@ void ServoController::printServos(){
   //   Serial.println(domeServoDestination[servonum]);
   // }
 }
-
-// void resetDomeServos(){
-//   bool doneAnything = false;
-//  for(uint16_t servonum = 0; servonum<DOME_SERVO_COUNT; servonum++){
-//     int tmp = servoZero;
-//     if(servoIsDomeEye(servonum)){
-//       tmp = servoSeventyFive;
-//     }
-//     domeServoDestination[servonum] = tmp;
-//   }
-// }
-
-// void resetDomePanelServos(){
-//   bool doneAnything = false;
-//   for(uint16_t servonum = 0; servonum<DOME_PANEL_SERVO_COUNT; servonum++){
-//     domeServoDestination[servonum] = servoZero;  
-//   }
-// }
-
-// void runShortCircuit(){
-//   // if(shortCircuiting()){
-//   if(true){ //TODO - should be shortCircuiting()
-//     if(currentMillis >= nextShortCircuitAction){
-//       Serial.println("Randomising Servos");
-//       for(uint16_t servonum = 0; servonum<DOME_PANEL_SERVO_COUNT; servonum++){
-//         if(random(2)){
-//           Serial.print("Setting Zero Servo: ");
-//           Serial.println(servonum);
-//           domeServoDestination[servonum] = servoZero;
-//         }else{
-//           Serial.print("Setting OneFifty Servo: ");
-//           Serial.println(servonum);
-//           domeServoDestination[servonum] = servoOneFifty;
-//         }
-// //         Serial.print("Running Servo: ");
-// //         Serial.print(servonum);
-// //         Serial.print(" Destination: ");
-// //         Serial.println(domeServoDestination[servonum]);
-//       }
-//       nextShortCircuitAction = currentMillis + 350;
-//     }
-//   }
-// }
-
-// void runServoEye(){
-//   if(currentMillis >= nextDomeEyeAction){
-//     nextDomeEyeAction = currentMillis + 2000;
-//     for(uint16_t servonum = 5; servonum<7; servonum++){
-//       int tmp = random(3);
-//       if(tmp == 0){
-//         domeServoDestination[servonum] = servoZero;  
-//       }else if(tmp == 1){
-//         domeServoDestination[servonum] = servoSeventyFive;  
-//       }else{
-//         domeServoDestination[servonum] = servoOneFifty;  
-//       }
-//          Serial.print("Moving Eye Servo: ");
-//          Serial.print(servonum);
-//          Serial.print(" Destination: ");
-//          Serial.println(domeServoDestination[servonum]);
-//     }
-
-//   }
-// }

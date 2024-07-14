@@ -8,7 +8,10 @@
 #define SHORT_CIRCUIT_SOUND_INDEX 5 //needs to match the sound played and position on the TX for SC
 #define SHORT_CIRCUIT_DURATION    3500 //about a 3.5 second file
 #define SHORT_CIRCUIT_SERVO_DELAY 250 
-#define EYE_MOVEMENT_SERVO_INTERVAL 2000 
+#define EYE_MOVEMENT_SERVO_INTERVAL 10000 
+
+#define AUDIO_SELECTOR_INDEX 0
+#define ARM_SELECTOR_INDEX   1
 
 class Artoo {
   public:
@@ -20,6 +23,7 @@ class Artoo {
     void checkStartShortCircuit();
     void runShortCircuit();
     bool isShortCircuiting();
+    void updateArmPositions();
     void updateEyeMovement();
 
     Input*            pInput;

@@ -9,9 +9,25 @@ Input::~Input(){
 void Input::run(unsigned long millis){
   currentMillis = millis;
 
+  checkSelectorInput();
   checkSoundInput();
+
   // Serial.print("SoundPWM: ");
   // Serial.println(soundPwm);
+}
+
+void Input::checkSelectorInput(){
+  int selectorPwm = pulseIn(SELECTOR_INPUT_PIN, HIGH, 30000);
+  for(int i = 0; i < (sizeof(selectorInputs)/ sizeof(selectorInputs[0])); i++){
+    if(selectorPwm > selectorInputs[i] - SELECTOR_GRACE && selectorPwm < selectorInputs[i] + SELECTOR_GRACE){
+      currentSelectorIndex = i;
+      break;
+    }
+  }
+}
+
+int Input::getSelectorIndex(){
+  return(currentSelectorIndex);
 }
 
 bool Input::soundIndexWasChanged(){

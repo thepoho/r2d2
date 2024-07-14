@@ -15,26 +15,66 @@ Artoo::~Artoo(){
 
 void Artoo::run(unsigned long millis){
   //debug stuff.
-  // if(pInput->getSoundIndex() == 0){
-  //   pServoController->setDomeServoDestination(5,  map(0,   0, 180, SERVOMIN, SERVOMAX));
-  //   pServoController->setDomeServoDestination(6,  map(0,   0, 180, SERVOMIN, SERVOMAX));
+  // if(pInput->getSelectorIndex() == 0){
+  //   pServoController->setBodyServoDestination(0,  map(0,   0, 180, SERVOMIN, SERVOMAX));
+  //   pServoController->setBodyServoDestination(1,  map(0,   0, 180, SERVOMIN, SERVOMAX));
+  // }else if(pInput->getSelectorIndex() == 1){
+  //   pServoController->setBodyServoDestination(0,  map(75 ,   0, 180, SERVOMIN, SERVOMAX));
+  //   pServoController->setBodyServoDestination(1,  map(75 ,   0, 180, SERVOMIN, SERVOMAX));
   // }else{
-  //   // pServoController->setDomeServoDestination(5,  map(150,   0, 180, SERVOMIN, SERVOMAX));
-  //   pServoController->setDomeServoDestination(6,  map(150,   0, 180, SERVOMIN, SERVOMAX));
+  //   pServoController->setBodyServoDestination(0,  map(150 ,   0, 180, SERVOMIN, SERVOMAX));
+  //   pServoController->setBodyServoDestination(1,  map(150 ,   0, 180, SERVOMIN, SERVOMAX));
   // }
 
   currentMillis = millis;
   
   pInput->run(millis);
 
-  pSound->run(millis, pInput->getSoundIndex());
+  if(pInput->getSelectorIndex() == AUDIO_SELECTOR_INDEX){
+    pSound->run(millis, pInput->getSoundIndex());
+    checkStartShortCircuit();
+  }else{
+    pSound->run(millis);
+  }
+
+  if(pInput->getSelectorIndex() == ARM_SELECTOR_INDEX){
+    updateArmPositions();
+  }
+
   pServoController->run(millis);
 
   //currently the dome panels are either short circuiting or reset.
-  checkStartShortCircuit();
   runShortCircuit();
 
   updateEyeMovement();
+
+  delay(100);
+}
+
+void Artoo::updateArmPositions(){
+  if(pInput->getSelectorIndex() != ARM_SELECTOR_INDEX){
+    return;
+  }
+
+  if(pInput->getSoundIndex() == 0){
+    pServoController->setBodyServoDestination(0,  pServoController->servoZero);
+    pServoController->setBodyServoDestination(1,  pServoController->servoZero);
+  }else if(pInput->getSoundIndex() == 1){
+    pServoController->setBodyServoDestination(0,  pServoController->servoSeventyFive);
+    pServoController->setBodyServoDestination(1,  pServoController->servoZero);
+  }else if(pInput->getSoundIndex() == 2){
+    pServoController->setBodyServoDestination(0,  pServoController->servoZero);
+    pServoController->setBodyServoDestination(1,  pServoController->servoSeventyFive);
+  }else if(pInput->getSoundIndex() == 3){
+    pServoController->setBodyServoDestination(0,  pServoController->servoZero);
+    pServoController->setBodyServoDestination(1,  pServoController->servoOneFifty);
+  }else if(pInput->getSoundIndex() == 4){  
+    pServoController->setBodyServoDestination(0,  pServoController->servoOneFifty);
+    pServoController->setBodyServoDestination(1,  pServoController->servoZero);
+  }else if(pInput->getSoundIndex() == 5){
+    pServoController->setBodyServoDestination(0,  pServoController->servoOneFifty);
+    pServoController->setBodyServoDestination(1,  pServoController->servoOneFifty);
+  }
 }
 
 void Artoo::updateEyeMovement(){
@@ -48,10 +88,12 @@ void Artoo::runShortCircuit(){
   if(isShortCircuiting()){
     if(currentMillis >= nextShortCircuitAction){
       pServoController->randomiseDomePanels();
+      pServoController->randomiseBodyPanels();
       nextShortCircuitAction = currentMillis + SHORT_CIRCUIT_SERVO_DELAY;
     }
   }else{
     pServoController->closeDomePanels();
+    pServoController->closeBodyPanels();
   }
 }
 
@@ -63,7 +105,7 @@ void Artoo::checkStartShortCircuit(){
   //Set short circuit timer if need be
   if(isShortCircuiting())
     return;
-  if(pInput->soundIndexWasChanged()){
+  if(pInput->soundIndexWasChanged() && pInput->getSelectorIndex() == AUDIO_SELECTOR_INDEX){
     if(pInput->getSoundIndex() == SHORT_CIRCUIT_SOUND_INDEX){
       //Correct sound is set
       shortCircuitEnd = currentMillis + SHORT_CIRCUIT_DURATION;  //about a 3 second file.
